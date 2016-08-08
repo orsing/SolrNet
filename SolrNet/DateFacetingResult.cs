@@ -18,37 +18,79 @@ using System.Collections.Generic;
 using System;
 
 namespace SolrNet {
+
+  #region Range Faceting addition - 160808 ORAN from VacuSolrNet
+  /// <summary>
+  /// 160808 ORAN from VacuSolrNet
+  /// yskwun 20131008
+  /// </summary>
+  public class DateFacetResult : RangeFacet {
+
+    public DateFacetResult(string name, DateTime start, DateTime end, string gap, RfNumber before, RfNumber after)
+      : base(name, start, end, gap, before, after) {
+    }
+  }
+  /// <summary>
+  /// 160808 ORAN from VacuSolrNet
+  /// yskwun 20131008
+  /// </summary>
+  public class FacetCount {
+
+    public string Value { get; set; }
+    public int Count { get; set; }
+    public RangeFacet rangeFacet;
+
+    public FacetCount(string value, int count, RangeFacet rangeFacet) {
+      this.Value = value;
+      this.Count = count;
+      this.rangeFacet = rangeFacet;
+    }
+
+    public RangeFacet RangeFacet {
+      get { return rangeFacet; }
+    }
+  }
+  //-- yskwun 20131008
+  #endregion
+
+  /// <summary>
+  /// Date faceting result
+  /// </summary>
+  public class DateFacetingResult {
+
+    /// <summary>
+    /// Date range gap (e.g. "+1DAY")
+    /// </summary>
+    public string Gap { get; set; }
+
+    /// <summary>
+    /// Maximum value
+    /// </summary>
+    public DateTime End { get; set; }
+
+    /// <summary>
+    /// The date faceting results.
+    /// </summary>
+    public IList<KeyValuePair<DateTime, int>> DateResults { get; set; }
+
+    /// <summary>
+    /// Other date faceting results.
+    /// </summary>
+    public IDictionary<FacetDateOther, int> OtherResults { get; set; }
+
     /// <summary>
     /// Date faceting result
     /// </summary>
-    public class DateFacetingResult {
-
-		/// <summary>
-		/// Date range gap (e.g. "+1DAY")
-		/// </summary>
-        public string Gap { get; set; }
-
-        /// <summary>
-        /// Maximum value
-        /// </summary>
-        public DateTime End { get; set; }
-
-		/// <summary>
-		/// The date faceting results.
-		/// </summary>
-		public IList<KeyValuePair<DateTime, int>> DateResults { get; set; }
-
-        /// <summary>
-        /// Other date faceting results.
-        /// </summary>
-        public IDictionary<FacetDateOther, int> OtherResults { get; set; }
-
-        /// <summary>
-        /// Date faceting result
-        /// </summary>
-		public DateFacetingResult() {
-			DateResults = new List<KeyValuePair<DateTime, int>>();
-            OtherResults = new Dictionary<FacetDateOther, int>();
-        }
+    public DateFacetingResult() {
+      DateResults = new List<KeyValuePair<DateTime, int>>();
+      OtherResults = new Dictionary<FacetDateOther, int>();
     }
+  }
+
+
+
+
+
+
+
 }

@@ -35,7 +35,9 @@ namespace SolrNet.Impl.ResponseParsers {
                 results.FacetQueries = ParseFacetQueries(mainFacetNode);
                 results.FacetFields = ParseFacetFields(mainFacetNode);
                 results.FacetDates = ParseFacetDates(mainFacetNode);
-				results.FacetPivots = ParseFacetPivots(mainFacetNode);
+                // 160808 ORAN
+                results.FacetRanges = ParseFacetRanges(mainFacetNode);// yskwun 20131008
+                results.FacetPivots = ParseFacetPivots(mainFacetNode);
             }
         }
 
@@ -81,6 +83,72 @@ namespace SolrNet.Impl.ResponseParsers {
             return d;
         }
 
+
+
+
+        #region Range Faceting addition - 160808 ORAN from VacuSolrNet
+        /// <summary>
+        /// 160808 ORAN from VacuSolrNet
+        /// yskwun 20131008
+        /// </summary>
+        //++ yskwun 20131008
+
+        public IDictionary<string, RangeFacet> ParseFacetRanges(XElement node) {
+          var d = new Dictionary<string, RangeFacet>();
+          var facetDateNode = node.Elements("lst")
+              .Where(X.AttrEq("name", "facet_ranges"));
+          if (facetDateNode != null) {
+            foreach (var fieldNode in facetDateNode.Elements()) {
+              var name = fieldNode.Attribute("name").Value;
+              d[name] = ParseRangeFacetingNode(fieldNode);
+            }
+          }
+          return d;
+        }
+
+        public RangeFacet ParseRangeFacetingNode(XElement node) {
+
+          var facetname = node.Attribute("name").Value;
+          var gapName = node.Elements().Where(X.AttrEq("name", "gap")).ElementAt(0).Name;
+          RangeFacet r;
+
+          if (gapName.Equals("str") || gapName.Equals("date"))
+            r = new DateFacetResult(facetname, new DateTime(), new DateTime(), null, null, null);//string name, DateTime start, DateTime end, string gap, Number before, Number after
+          else
+            r = new NumericFacetResult(facetname, null, null, null, null, null);//string name, Number start, Number end, Number gap, Number before, Number after
+
+          foreach (var rangeFacetingNode in node.Elements()) {
+            var name = rangeFacetingNode.Attribute("name").Value;
+            switch (name) {
+              case "gap":
+                r.Gap = RangeFacet.createValue(rangeFacetingNode.Name, rangeFacetingNode.Value);
+                break;
+              case "start":
+                r.Start = RangeFacet.createValue(rangeFacetingNode.Name, rangeFacetingNode.Value);
+                break;
+              case "end":
+                r.End = RangeFacet.createValue(rangeFacetingNode.Name, rangeFacetingNode.Value);
+                break;
+              case "before":
+                r.Before = (RfNumber)RangeFacet.createValue(rangeFacetingNode.Name, rangeFacetingNode.Value);
+                break;
+              case "after":
+                r.After = (RfNumber)RangeFacet.createValue(rangeFacetingNode.Name, rangeFacetingNode.Value);
+                break;
+              case "counts":
+                foreach (var countNode in rangeFacetingNode.Elements()) {
+                  r.AddCount(countNode.Attribute("name").Value, int.Parse(countNode.Value));
+                }
+                break;
+              default:
+                Console.WriteLine(rangeFacetingNode.Name + ":" + name + ":" + rangeFacetingNode.Value);
+                break;
+            }
+          }
+          return r;
+        }
+        //-- yskwun 20131008
+        #endregion
         /// <summary>
         /// Parses facet dates results
         /// </summary>
